@@ -26,7 +26,7 @@ MAZE_H = 4  # grid height
 MAZE_W = 4  # grid width
 
 
-class Maze(tk.Tk, object):
+class Maze(tk.Tk):
     def __init__(self):
         super(Maze, self).__init__()
         self.action_space = ['u', 'd', 'l', 'r']
@@ -81,6 +81,7 @@ class Maze(tk.Tk, object):
         self.canvas.pack()
 
     def reset(self):
+        # move is implemented by delete the early red rect, and generate a new one.
         self.update()
         time.sleep(0.5)
         self.canvas.delete(self.rect)
@@ -144,5 +145,6 @@ def update():
 
 if __name__ == '__main__':
     env = Maze()
+    # delay operation
     env.after(100, update)
     env.mainloop()
