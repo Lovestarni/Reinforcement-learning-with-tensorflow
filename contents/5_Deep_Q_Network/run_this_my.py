@@ -48,7 +48,8 @@ if __name__ == "__main__":
                       replace_target_iter=200,
                       memory_size=2000,
                       batch_size=32,
-                      output_graph=True
+                      output_graph=True,
+                      e_greedy_increment=0.001
                       )
     env.after(100, run_maze)
     env.mainloop()
