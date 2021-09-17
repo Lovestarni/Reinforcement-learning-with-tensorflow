@@ -32,6 +32,11 @@ class Net(torch.nn.Module):
         out = self.out_activate(x)
         return out
 
+    def initialize_weights(self):
+        for m in self.modules():
+            torch.nn.init.normal_(m.weight.data, 0.01)
+            torch.nn.init.constant_(m.bias.data, 0.01)
+
 
 class PolicyGradient:
     def __init__(
@@ -72,10 +77,10 @@ class PolicyGradient:
 
     def choose_action(self, observation):
         # 推断的时候是一个一个输入的，所以这里要加一个唯独
+        # 概率分布
         observation = torch.unsqueeze(torch.FloatTensor(observation), 0)
         pro_weights = self.pollicy_net(observation)
-        # 概率分布
-        self.ep_as_prob.append(pro_weights[0].data)
+        # self.ep_as_prob.append(pro_weights[0].data)
         m = Categorical(pro_weights)
         # 变为类别分布，然后采样
         action = m.sample()
@@ -93,15 +98,18 @@ class PolicyGradient:
 
         # return discounted_ep_rs_norm
         # 这里要梯度上升，最大化似然
-        loss = torch.mean(-self.loss_func(torch.stack(self.ep_as_prob),
-                                          torch.LongTensor(
-                                              self.ep_as)) *
-                          discounted_ep_rs_norm)
+        prob_input = self.pollicy_net(torch.FloatTensor(self.ep_obs))
+        loss = torch.mean(self.loss_func(prob_input, torch.LongTensor(
+            self.ep_as)) * discounted_ep_rs_norm)
 
         self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()
         # train on episode
+
+        # empty episode data
+        self.ep_obs, self.ep_as, self.ep_rs, self.ep_as_prob = [], [], [], []
+        return discounted_ep_rs_norm
 
     def _discount_and_norm_rewards(self):
         # discount episode rewards

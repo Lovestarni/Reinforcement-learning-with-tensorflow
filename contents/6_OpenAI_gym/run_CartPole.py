@@ -10,6 +10,7 @@ import gym
 
 from RL_brain import DeepQNetwork
 
+ENV_RENDER = False
 env = gym.make('CartPole-v1')
 env = env.unwrapped
 
@@ -26,23 +27,23 @@ RL = DeepQNetwork(n_actions=env.action_space.n,
 
 total_steps = 0
 
-for i_episode in range(100):
+for i_episode in range(2000):
 
     observation = env.reset()
     ep_r = 0
     while True:
-        env.render()
+        if ENV_RENDER: env.render()
 
         action = RL.choose_action(observation)
 
         observation_, reward, done, info = env.step(action)
 
         # the smaller theta and closer to center the better
-        x, x_dot, theta, theta_dot = observation_
-        r1 = (env.x_threshold - abs(x)) / env.x_threshold - 0.8
-        r2 = (env.theta_threshold_radians - abs(
-            theta)) / env.theta_threshold_radians - 0.5
-        reward = r1 + r2
+        # x, x_dot, theta, theta_dot = observation_
+        # r1 = (env.x_threshold - abs(x)) / env.x_threshold - 0.8
+        # r2 = (env.theta_threshold_radians - abs(
+        #     theta)) / env.theta_threshold_radians - 0.5
+        # reward = r1 + r2
 
         RL.store_transition(observation, action, reward, observation_)
 
@@ -54,6 +55,8 @@ for i_episode in range(100):
             print('episode: ', i_episode,
                   'ep_r: ', round(ep_r, 2),
                   ' epsilon: ', round(RL.epsilon, 2))
+            if ep_r > 2000:
+                ENV_RENDER = True
             break
 
         observation = observation_

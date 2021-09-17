@@ -1,7 +1,6 @@
 import gym
+
 from DQN_torch import DeepQNetwork
-import numpy as np
-from loguru import logger
 
 env = gym.make('CartPole-v0')
 env = env.unwrapped
@@ -14,13 +13,14 @@ print(env.observation_space.low)
 
 
 def run_dqn(epoch=100):
+    ENV_RENDER = False
     total_steps = 0
     avg_rewards = []
-    for i_episode in range(100):
+    for i_episode in range(2000):
         observation = env.reset()
         ep_r = 0
         while True:
-            env.render()  # 刷新环境
+            if ENV_RENDER: env.render()  # 渲染界面
             action = RL.choose_action(observation)
             # Action
             # 0 left
@@ -44,7 +44,7 @@ def run_dqn(epoch=100):
 
             RL.store_transition(observation, action, reward, observation_)
 
-            if total_steps > 1000:
+            if total_steps > 2000:
                 RL.learn()
 
             ep_r += reward
@@ -52,11 +52,13 @@ def run_dqn(epoch=100):
             # 比cost更好的评价训练的过程
             if done:
                 print('episode：', i_episode, 'ep_r: ', round(ep_r, 2),
-                            ' epsilon: ', round(RL.epsilon, 2))
-                avg_rewards.append(ep_r/reward)
+                      ' epsilon: ', round(RL.epsilon, 2))
+                avg_rewards.append(ep_r / reward)
 
                 # if total_steps % 10 == 0:
                 #     np.save(np.array(avg_rewards))
+                if ep_r > 1500:
+                    ENV_RENDER = True
                 break
             observation = observation_
             total_steps += 1
